@@ -139,9 +139,9 @@ val ins = r.initAndGetAsInterface<FibCustom>()
 ## How to use it?
 
 1. You can either clone the whole project. And build it locally.
-2. Or you can just download far jars I compiled. They are located in releases
+2. Or you can just download fat jars I compiled. They are located in releases
 
-I will soon post it on maven local as well, so it would be easier.
+I will soon post it on maven central as well, so it would be easier.
 
 
 ### Limitations
