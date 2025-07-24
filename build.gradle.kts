@@ -22,8 +22,7 @@ tasks.register("sss") {
     println("Gradle version: ${gradle.gradleVersion}")
 }
 
-val fatJar = tasks.register<ShadowJar>("fatJar") {
-    archiveClassifier.set("all")
+val fatJar = tasks.register<ShadowJar>("thinJar") {
     mergeServiceFiles()
     from(sourceSets.main.get().output)
 }
@@ -37,7 +36,7 @@ tasks.register("publishJar") {
     group = "build"
     description = "Builds fatJar and sourcesJar"
 
-    dependsOn(fatJar, sourcesJar)
+    dependsOn(fatJar, sourcesJar, tasks.named("shadowJar"))
 }
 
 tasks.withType<JavaExec>().configureEach {

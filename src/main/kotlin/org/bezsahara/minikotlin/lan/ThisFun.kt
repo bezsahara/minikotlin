@@ -8,6 +8,17 @@ import org.bezsahara.minikotlin.compiler.asm.mapA
 import kotlin.reflect.KClass
 
 
+/**
+ * Is used to interact with the function you program.
+ * Can be used to:
+ * - Call itself via call functions
+ * - Call other methods of the class you generate `callMethod`
+ * - Get or set fields of the class you generate
+ *
+ * Currently, works, but I do acknowledge that it is not very nicely designed
+ *
+ * @see org.bezsahara.minikotlin.lan.lib.CallItself
+ */
 class ThisFun<T: Any>(val mk: MiniKotlin<T>) {
     val methodProperty = mk.methodProperty
     val descriptor = MDInfo(
@@ -60,14 +71,15 @@ class ThisFun<T: Any>(val mk: MiniKotlin<T>) {
 
         if (methodArgs.size != args.size) error("Different arguments for the method")
 
-        methodArgs.forEachIndexed { index, parameter ->
+        // need to create a better check
+//        methodArgs.forEachIndexed { index, parameter ->
 
-            if (!parameter.typeInfo.recoverJClass().isAssignableFrom(args[index].jClass)) {
+//            if (!parameter.typeInfo.recoverJClass().isAssignableFrom(args[index].jClass)) {
 //                error("Wrong $index argument type.")
-            }
+//            }
 
 
-        }
+//        }
 
         val ksd = args
         if (asNative) {

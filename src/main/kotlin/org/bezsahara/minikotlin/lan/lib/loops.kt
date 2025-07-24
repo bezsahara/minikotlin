@@ -2,8 +2,10 @@ package org.bezsahara.minikotlin.lan.lib
 
 import org.bezsahara.minikotlin.lan.*
 import org.bezsahara.minikotlin.lan.logic.call1
+import org.bezsahara.minikotlin.lan.logic.call2
 import org.bezsahara.minikotlin.lan.logic.callNt1
 import org.bezsahara.minikotlin.lan.logic.lessThan
+import org.bezsahara.minikotlin.lan.logic.math.minus
 import org.bezsahara.minikotlin.lan.logic.math.plus
 import org.bezsahara.minikotlin.lan.logic.whileDo
 
@@ -27,6 +29,19 @@ inline fun <reified T : Any> KRef.Obj<out Iterator<T>>.forEach(block: WhileLoop.
         whileDo(callNt1(Iterator<T>::hasNext, this@forEach)) {
             val next = call1(Iterator<T>::next, this@forEach)
             block(next)
+        }
+    }
+}
+
+@JvmName("forEachList")
+context(mk: MiniKotlin<out Any>)
+inline fun <reified T : Any> KRef.Obj<out List<T>>.forEach(block: WhileLoop.Scope.(KRef.Obj<T>) -> Unit ) {
+    mk.apply {
+        val counter = number(0).toVariable()
+        val size = propertyGetNt(List<T>::size, this@forEach).toVariable()
+        whileDo(counter lessThan size) {
+            block(call2(List<T>::get, this@forEach, counter))
+            counter setTo counter + number(1)
         }
     }
 }

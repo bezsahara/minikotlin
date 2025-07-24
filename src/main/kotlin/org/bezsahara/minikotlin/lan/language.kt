@@ -280,7 +280,7 @@ class MiniKotlin<F: Any>(
 
     }
 
-    fun <T: Any, V: Any> propertyGetNt(p: KProperty1<T, V>, arg: KRef.Obj<T>): KRef.Native<V> {
+    fun <T: Any, V: Any> propertyGetNt(p: KProperty1<T, V>, arg: KRef.Obj<out T>): KRef.Native<V> {
         return propertyGetP(p, arg, true) as KRef.Native<V>
     }
 

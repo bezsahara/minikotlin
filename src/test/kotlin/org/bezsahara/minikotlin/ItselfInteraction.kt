@@ -9,6 +9,7 @@ import org.bezsahara.minikotlin.builder.singleFunImplMiniKt
 import org.bezsahara.minikotlin.lan.callMethod
 import org.bezsahara.minikotlin.lan.callMethodNt
 import org.bezsahara.minikotlin.lan.getField
+import org.bezsahara.minikotlin.lan.lib.call1
 import org.bezsahara.minikotlin.lan.lib.echoLine
 import org.bezsahara.minikotlin.lan.lib.number
 import org.bezsahara.minikotlin.lan.lib.return_

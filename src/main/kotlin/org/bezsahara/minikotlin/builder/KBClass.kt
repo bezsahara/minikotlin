@@ -1,10 +1,13 @@
 package org.bezsahara.minikotlin.builder
 
+import com.sun.source.util.Plugin
 import org.bezsahara.minikotlin.builder.auto.KeyStoreInfo
 import org.bezsahara.minikotlin.builder.auto.insertAutoInitForKBS
 import org.bezsahara.minikotlin.builder.declaration.*
 import org.bezsahara.minikotlin.builder.opcodes.ext.autoInit
 import org.bezsahara.minikotlin.builder.opcodes.method.LabelPoint
+import org.bezsahara.minikotlin.builder.plugin.PluginData
+import org.bezsahara.minikotlin.builder.plugin.PluginKey
 import org.bezsahara.minikotlin.compiler.KBClassLoader
 import org.bezsahara.minikotlin.compiler.KBClassPair
 import org.bezsahara.minikotlin.compiler.KBCompiler
@@ -14,6 +17,7 @@ import org.bezsahara.minikotlin.compiler.verifier.KBOpcodesVerifier
 import org.bezsahara.minikotlin.lan.logic.bridge.KeyStorage0
 import org.objectweb.asm.Opcodes
 import java.io.File
+import java.util.IdentityHashMap
 import kotlin.jvm.internal.ClassBasedDeclarationContainer
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -45,6 +49,7 @@ class KBClass(
         val classProperties: ClassProperties,
         val thisClassInfo: ThisClassInfo
     ) {
+
         fun saveToFolder(path: String) {
             File(path, "$name.class").writeBytes(toByteArray())
         }
@@ -137,6 +142,7 @@ class KBClass(
         return name
     }
 
+    // TODO create better system for code insertion
     fun result(compiler: KBCompiler = KBCompilerASM()): Result {
         require(methods.containsKey("<init>"))
 
@@ -164,10 +170,8 @@ class KBClass(
         }
     }
 
-    class Builder(private val name: String, val classProperties: ClassProperties) {
-        private val implementing = mutableListOf<TypeInfo>()
-
-        private var bodyLambda: KBClass.() -> Unit = {}
+    class Builder(val name: String, val classProperties: ClassProperties) {
+        val implementing = mutableListOf<TypeInfo>()
 
         infix fun implements(other: KClass<out Any>): Builder {
             implementing.add(TypeInfo.Kt(other))
@@ -184,13 +188,8 @@ class KBClass(
             return this
         }
 
-        infix fun body(block: KBClass.() -> Unit): KBClass {
-            bodyLambda = block
-            return build()
-        }
-
-        private fun build(): KBClass {
-            return KBClass(implementing, name, classProperties).also(bodyLambda)
+        inline infix fun body(block: KBClass.() -> Unit): KBClass {
+            return KBClass(implementing, name, classProperties).also(block)
         }
     }
 
@@ -198,10 +197,17 @@ class KBClass(
         return (static ofType TypeInfo.Void).methodTyped<Function<Unit>>("<clinit>")
     }
 
-    val staticCode = mutableListOf<KBMethod.() -> Unit>()
-
     // TODO allow to put methods that have different signatures but same names
     val methods = hashMapOf<String, KBMethod.Builder<*>>()
+
+    fun addMethod(methodKey: String, builder: KBMethod.Builder<*>) {
+        if (methodKey in methods) {
+            error("You already defined function named $methodKey")
+        }
+
+        methods.put(methodKey, builder)
+    }
+
     private val fields = mutableListOf<KBField>()
 
 
@@ -243,6 +249,8 @@ class KBClass(
     fun init(block: KBMethod.() -> Unit) {
         public ofType TypeInfo.Void method "<init>" runs (block)
     }
+
+    val pluginMap = IdentityHashMap<PluginKey, PluginData>()
 
     // Auto inits the init. It just calls init of the Object
     fun autoInit(block: KBMethod.() -> Unit = {}) {
@@ -307,36 +315,35 @@ class KBClass(
             }
         }
 
-        return KBMethod.Builder<T>(f.name, declProp, parameters, classProperties, this).also { methods.put(f.name, it) }
+        return KBMethod.Builder<T>(f.name, declProp, parameters, classProperties, this)
+            .also { methods.put(f.name, it) }
     }
 
+    // Better just use different names
     infix fun DeclarationProperty<out DP.CanBeMethod, out TypeInfo>.method(name: String): KBMethod.Builder<Any> {
         return KBMethod.Builder<Any>(name, this, classProperties = classProperties, kbClass = this@KBClass)
-            .also { methods.put(name, it) }
+            .also { addMethod(name, it) }
     }
 
     fun <T : Function<*>> DeclarationProperty<out DP.CanBeMethod, out TypeInfo>.methodTyped(name: String): KBMethod.Builder<T> {
         return KBMethod.Builder<T>(name, this, classProperties = classProperties, kbClass = this@KBClass)
-            .also { methods.put(name, it) }
+            .also { addMethod(name, it) }
     }
 
-    infix fun DeclarationProperty<out DP.CanBeMethod, out TypeInfo>.method(name: StringWithParam): KBMethod.Builder<Any> {
+    infix fun DeclarationProperty<out DP.CanBeMethod, out TypeInfo>.method(stringWithParam: StringWithParam): KBMethod.Builder<Any> {
+        val params = stringWithParam.paramsFactory(if (isStatic) 0 else 1)
         return KBMethod.Builder<Any>(
-            name.name,
+            stringWithParam.name,
             this,
-            name.paramsFactory(if (isStatic) 0 else 1),
+            params,
             classProperties,
             kbClass = this@KBClass
-        ).also { methods.put(name.name, it) }
+        ).also { addMethod(stringWithParam.name, it) }
     }
 
     infix fun DeclarationProperty<out DP.CanBeField, out TypeInfo>.field(name: String): ThisField {
         KBField(name, this).also { fields.add(it) }
         return ThisField(name, this.typeInfo!!, isStatic)
-    }
-
-    fun addMethod(n: String, m: KBMethod.Builder<*>) {
-        methods.put(n, m)
     }
 }
 
