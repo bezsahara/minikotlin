@@ -588,7 +588,21 @@ class KBOpcodesVerifier(
             }
 
             is KBTryCatchBlockOP -> {
-                TODO() // used to just register, useless here, it is assumed that user will add jump instruction after try
+                // it is assumed that user will add jump instruction after try block to catch end block
+                val throwableType = labelPresent.exceptionType.recoverJClass()
+
+                val frame = Frame(listOf(SWordDebug(A(throwableType), JustPrint("THROW"))), variables) // since catch block removes all the stack. We only append the throwable
+                if (markLabel(
+                        labelPresent,
+                        frame,
+                        labelPresent.startCatch
+                    )
+                ) {
+                    return -1
+                }
+                // we need to check this path without any stack btw.
+                jumpToLabelInBuffer(labelPresent.startCatch, labelPresent, frame)
+                return 0
             }
         }
     }

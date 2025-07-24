@@ -432,9 +432,15 @@ class KBTryCatchBlockOP(
     val exceptionType: TypeInfo
 ) : KBByteCode(), LabelPresent {
     init {
-        startTry.markAsControlFlowLabel()
-        endTry.markAsControlFlowLabel()
-        startCatch.markAsControlFlowLabel()
+//        startTry.markAsControlFlowLabel()
+//        endTry.markAsControlFlowLabel()
+        startTry.markAsCatchBlock()
+        endTry.markAsCatchBlock()
+        startCatch.markAsCatchBlock()
+    }
+
+    override fun toString(): String {
+        return "TRYCATCHBLOCK TRY { $startTry | $endTry } CATCH: $startCatch "
     }
 
     override fun getBytesSize(currentOffset: Int): Int {

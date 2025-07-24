@@ -3,7 +3,18 @@ package org.bezsahara.minikotlin.builder.opcodes.method
 enum class LabelType {
     ControlFlow,
     MetadataOnly,
-    Unknown
+    Unknown,
+    CatchBlockOnly
+}
+
+
+fun th() {
+    try {
+        println("st")
+        val k = StringBuilder()
+    } catch (e: Error) {
+        println("end")
+    }
 }
 
 class Label(var name: String?) {
@@ -11,7 +22,13 @@ class Label(var name: String?) {
     var labelType: LabelType = LabelType.Unknown
         private set
 
+    fun markAsCatchBlock() {
+        labelType = LabelType.CatchBlockOnly
+    }
+
     internal fun markAsControlFlowLabel() {
+        if (labelType != LabelType.Unknown) return
+
         labelType = LabelType.ControlFlow
     }
 

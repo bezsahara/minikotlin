@@ -4,6 +4,8 @@ import org.bezsahara.minikotlin.builder.KBMethod
 import org.bezsahara.minikotlin.builder.declaration.TypeInfo
 import org.bezsahara.minikotlin.builder.declaration.args
 import org.bezsahara.minikotlin.builder.declaration.returns
+import org.bezsahara.minikotlin.builder.opcodes.method.KBTryCatchBlockOP
+import org.bezsahara.minikotlin.builder.opcodes.method.Label
 
 fun KBMethod.autoInit() {
     aload(0) // load this
@@ -13,4 +15,18 @@ fun KBMethod.autoInit() {
 
 fun KBMethod.i_unbox() {
     invokevirtual(TypeInfo.Java(Int::class.javaObjectType), "intValue", args() returns Int::class)
+}
+
+fun KBMethod.tryCatchBlock(
+    start: Label,
+    end: Label,
+    handler: Label,
+    errType: TypeInfo
+) {
+    addOperation(KBTryCatchBlockOP(
+        start,
+        end,
+        handler,
+        errType
+    ))
 }

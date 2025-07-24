@@ -6,11 +6,13 @@ import org.bezsahara.minikotlin.builder.KBMethod
 import org.bezsahara.minikotlin.builder.ThisMethod
 import org.bezsahara.minikotlin.builder.declaration.DeclarationProperty
 import org.bezsahara.minikotlin.builder.declaration.TypeInfo
+import org.bezsahara.minikotlin.lan.KVar.Obj
 import org.bezsahara.minikotlin.lan.compiler.MiniKotlinCompiler
+import org.bezsahara.minikotlin.lan.logic.ErrorHandler
 import org.bezsahara.minikotlin.lan.logic.PropertyGet
 import org.bezsahara.minikotlin.lan.logic.PropertySet
 import org.bezsahara.minikotlin.lan.logic.ReturnPiece
-import org.bezsahara.minikotlin.lan.logic.ThrowPiece
+import org.bezsahara.minikotlin.lan.logic.ThrowValue
 import org.bezsahara.minikotlin.lan.pieces.ActionPiece
 import org.bezsahara.minikotlin.lan.pieces.CustomActionPiece
 import org.bezsahara.minikotlin.lan.pieces.VariableSet
@@ -92,7 +94,7 @@ class MiniKotlin<F: Any>(
 
     @Suppress("FunctionName", "UNREACHABLE_CODE")
     fun throw_(r: KRef<out Throwable>) {
-        addPiece(CustomActionPiece(ThrowPiece(r)))
+        addPiece(CustomActionPiece(ThrowValue(r)))
     }
 
     // Returns
@@ -118,7 +120,7 @@ class MiniKotlin<F: Any>(
     fun <T: Any> variable(name: String, clazz: KClass<T>): KVar.Obj<T> {
         var variableInMap = variables[name]
         if (variableInMap == null) {
-            variableInMap = KVar.Obj<T>(name, clazz, KValue.NotPresent)
+            variableInMap = KVar.Obj(name, clazz)
             variables[name] = variableInMap
         }
         return if (variableInMap is KVar.Obj<*>) {
@@ -190,7 +192,7 @@ class MiniKotlin<F: Any>(
 
     // Fields and related
 
-    private fun <T: Any, V: Any> propertyGetP(p: KProperty1<T, V>, arg: KRef.Obj<out T>, asNative: Boolean): KRef<V> {
+    private fun <T: Any, V: Any> propertyGetP(p: KProperty1<T, V?>, arg: KRef.Obj<out T>, asNative: Boolean): KRef<V> {
 //        val idx = getIndex()
         val asGetter = p.javaGetter
         // It is a getter
@@ -229,7 +231,7 @@ class MiniKotlin<F: Any>(
         }
     }
 
-    private fun <V: Any> propertyGetP(p: KProperty0<V>, asNative: Boolean): KRef<V> {
+    private fun <V: Any> propertyGetP(p: KProperty0<V?>, asNative: Boolean): KRef<V> {
         val asGetter = p.javaGetter
         // It is a getter
         val i = if (asGetter != null) {
@@ -267,20 +269,20 @@ class MiniKotlin<F: Any>(
         }
     }
 
-    fun <V: Any> propertyGet(p: KProperty0<V>): KRef.Obj<V> {
+    fun <V: Any> propertyGet(p: KProperty0<V?>): KRef.Obj<V> {
         return propertyGetP(p, false) as KRef.Obj<V>
     }
 
-    fun <T: Any, V: Any> propertyGet(p: KProperty1<T, V>, arg: KRef.Obj<out T>): KRef.Obj<V> {
+    fun <T: Any, V: Any> propertyGet(p: KProperty1<T, V?>, arg: KRef.Obj<out T>): KRef.Obj<V> {
         return propertyGetP(p, arg, false) as KRef.Obj<V>
     }
 
-    fun <V: Any> propertyGetNt(p: KProperty0<V>): KRef.Native<V> {
+    fun <V: Any> propertyGetNt(p: KProperty0<V?>): KRef.Native<V> {
         return propertyGetP(p, true) as KRef.Native<V>
 
     }
 
-    fun <T: Any, V: Any> propertyGetNt(p: KProperty1<T, V>, arg: KRef.Obj<out T>): KRef.Native<V> {
+    fun <T: Any, V: Any> propertyGetNt(p: KProperty1<T, V?>, arg: KRef.Obj<out T>): KRef.Native<V> {
         return propertyGetP(p, arg, true) as KRef.Native<V>
     }
 
@@ -302,6 +304,15 @@ class MiniKotlin<F: Any>(
         addPiece(CustomActionPiece(PropertySet(p, p.name, v.use(), false, arg.use())))
     }
 
+    @Suppress("FunctionName")
+    inline fun try_(block: () -> Unit): ErrorHandler.CatchBlock {
+        return ErrorHandler(this).let {
+            block()
+            it.endOfTry()
+        }
+    }
+
+    @Suppress("FunctionName")
     inline fun if_(condition: KRef.Native<Boolean>, block: () -> Unit): IfBlock.Else {
         return IfBlock(this).if_(condition, block)
     }
