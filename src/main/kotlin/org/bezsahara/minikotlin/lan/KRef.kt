@@ -149,9 +149,17 @@ sealed interface KVar<T : Any> : KRef<T> {
 
 
     // forces index is an index that was "forced" on the variable even before indexes are resolved. Parameters need it
-    class Obj<T : Any>(override val name: String, type: KClass<out T>, value: KValue, override val forcedIndex: Int) :
-        KVar<T>, KRef.Obj<T>(type, value) {
-        constructor(name: String, type: KClass<out T>, value: KValue) : this(name, type, value, -1)
+    class Obj<T : Any>(override val name: String, type: KClass<out T>, override val forcedIndex: Int) :
+        KVar<T>, KRef.Obj<T>(type, KValue.NotPresent) {
+        @Deprecated("Do not use value.", ReplaceWith("Obj(name, type)"))
+        constructor(name: String, type: KClass<out T>, value: KValue) : this(name, type, -1)
+
+        constructor(name: String, type: KClass<out T>) : this(name, type, -1)
+
+        @Deprecated("Do not use value.", ReplaceWith("(name, type, forcedIndex)"))
+        constructor(name: String, type: KClass<out T>, value: KValue, forcedIndex: Int) : this(
+            name, type, forcedIndex
+        )
 
         override var initialized: Boolean = false
         override var used: Boolean

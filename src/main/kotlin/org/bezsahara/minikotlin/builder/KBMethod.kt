@@ -100,6 +100,8 @@ class KBMethod(
     val parameters = linkedMapOf<String, Parameter>()
     val operations = java.util.ArrayList<KBByteCode>()
 
+    val currentIndex get() =  operations.lastIndex
+
     private var parameterIndex = if (methodProperty.isStatic) 0 else 1
 
     private var parametersBlocked = false
@@ -179,6 +181,16 @@ class KBMethod(
             parametersBlocked = true
         }
         (operations).add(bc)
+    }
+
+    fun addOperationAtIndex(index: Int, kbByteCode: KBByteCode) {
+        val bc: KBByteCode = if (debugEnabled) {
+            KBByteCode.Debug(kbByteCode, DebugInfo())
+        } else kbByteCode
+        if (!parametersBlocked) {
+            parametersBlocked = true
+        }
+        (operations).add(index, bc)
     }
 
     inner class Capture(val startIndex: Int, val endIndex: Int) {
