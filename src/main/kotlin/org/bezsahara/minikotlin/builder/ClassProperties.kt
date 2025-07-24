@@ -8,7 +8,7 @@ package org.bezsahara.minikotlin.builder
  * @property debug Enables debug information in the bytecode, such as source line mappings.
  *                Useful for identifying which method caused verification errors.
  * @property trackVariables Inserts local variable name metadata into the generated `.class` file.
- *                          Currently not functioning correctly. Adds extra generation time if enabled.
+ *                          Adds extra generation time if enabled.
  * @property syntheticPrefix Prefix used for naming synthetic fields and other internally generated elements.
  */
 data class ClassProperties(

@@ -22,23 +22,8 @@ import kotlin.collections.ArrayDeque
 import kotlin.collections.getOrNull
 
 
-fun spps(a: Boolean) {
-    if (a) {
-        val s = "1"
-        s.get(0)
-    } else {
-        val sd = 34
-        sd+34
-    }
-
-    val ep = StringBuilder()
-
-}
-
 // Probably a better solution was to build blocks of paths first and then check them
 // But, it would have been probably slower, actually I have no idea. If anyone wants to write better verifier do it
-// TODO implement a way to track actual types and their supertypes instead of A - partially done
-//  make same for natives special Z, S, and others instead of I
 class KBOpcodesVerifier(
     classProperties: ClassProperties,
     private val allByteCode: List<KBByteCode>,
@@ -48,6 +33,14 @@ class KBOpcodesVerifier(
     private val functionName: String,
     private val thisClassInfo: ThisClassInfo
 ) {
+
+    companion object {
+        const val PEEP_FAIL = 0//0
+        const val PEEP_FAIL_2SLOT = 1//2
+        const val PEEP_SUCCESS = 2//1
+        const val PEEP_SUCCESS_2SLOT = 3//12
+
+    }
 
     private val shouldTrackVariables = classProperties.trackVariables
     private val cSSize = allByteCode.size
@@ -73,36 +66,35 @@ class KBOpcodesVerifier(
         return when (c) {
             V, V1 -> error("")
             W32 -> {
-                if (getOrNull(size - 1)?.kind is W32) 1 else 0
+                if (getOrNull(size - 1)?.kind is W32) PEEP_SUCCESS else PEEP_FAIL
             }
 
             W64 -> {
-                if (getOrNull(size - 1)?.kind is W64) 1 else 0
+                if (getOrNull(size - 1)?.kind is W64) PEEP_SUCCESS else PEEP_FAIL
             }
 
             is W32, is W64 -> {
                 val getAttempt = getOrNull(size - 1)
                 if (getAttempt == null) {
-                    0
+                    PEEP_FAIL
                 } else {
                     if (c.canAccept(getAttempt.kind)) {
-                        1
+                        PEEP_SUCCESS
                     } else {
-                        0
+                        PEEP_FAIL
                     }
                 }
-//                if (getOrNull(size - 1)?.kind?.canAccept(c) == true) 1 else 0
             }
             W64Both -> {
                 when (getOrNull(size - 1)?.kind) {
                     V, V1 -> error("")
 
                     is W32 -> {
-                        if (getOrNull(size - 2)?.kind is W32) 12 else 2
+                        if (getOrNull(size - 2)?.kind is W32) PEEP_SUCCESS_2SLOT else PEEP_FAIL_2SLOT
                     }
 
-                    is W64, W64Both -> 1
-                    null -> 0
+                    is W64, W64Both -> PEEP_SUCCESS
+                    null -> PEEP_FAIL
                 }
             }
         }
@@ -123,7 +115,7 @@ class KBOpcodesVerifier(
         currentIndex: Int,
     ) {
         when (stack.peepCompare(this)) {
-            0 -> {
+            PEEP_FAIL -> {
 //                val stackPop = stack.popOrNull()
                 produceError(
                     byteCode,
@@ -134,7 +126,7 @@ class KBOpcodesVerifier(
                 )
             }
 
-            1 -> {
+            PEEP_SUCCESS -> {
                 if (removedBuffer != null) {
                     removedBuffer[0] = stack.pop(currentIndex)
                 } else {
@@ -142,7 +134,7 @@ class KBOpcodesVerifier(
                 }
             }
 
-            12 -> {
+            PEEP_SUCCESS_2SLOT -> {
                 if (removedBuffer != null) {
                     removedBuffer[0] = stack.pop(currentIndex)
                     removedBuffer[1] = stack.pop(currentIndex)
@@ -152,7 +144,7 @@ class KBOpcodesVerifier(
                 }
             }
 
-            2 -> {
+            PEEP_FAIL_2SLOT -> {
                 produceError(
                     byteCode,
                     stack.toTypedArray(),
@@ -179,7 +171,7 @@ class KBOpcodesVerifier(
                 additional!!
             } else this[i]
             when (stack.peepCompare(w)) {
-                0, 2 -> {
+                PEEP_FAIL_2SLOT, PEEP_FAIL -> {
                     val sn = buildList<SWord?> {
                         if (additional != null) {
                             add(additional)
@@ -196,7 +188,7 @@ class KBOpcodesVerifier(
                     )
                 }
 
-                1 -> {
+                PEEP_SUCCESS -> {
                     if (listToReturn == null) {
                         stack.pop(currentIndex)
                     } else {
@@ -205,7 +197,7 @@ class KBOpcodesVerifier(
                     }
                 }
 
-                12 -> {
+                PEEP_SUCCESS_2SLOT -> {
                     if (listToReturn == null) {
                         stack.pop(currentIndex)
                         stack.pop(currentIndex)

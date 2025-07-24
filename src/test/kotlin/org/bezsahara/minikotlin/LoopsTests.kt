@@ -2,12 +2,14 @@ package org.bezsahara.minikotlin
 
 import org.bezsahara.minikotlin.builder.implLambdaMiniKt
 import org.bezsahara.minikotlin.builder.singleFunImplMiniKt
+import org.bezsahara.minikotlin.lan.lib.echoLine
 import org.bezsahara.minikotlin.lan.lib.forEach
 import org.bezsahara.minikotlin.lan.lib.get
 import org.bezsahara.minikotlin.lan.lib.miniObjectArray
 import org.bezsahara.minikotlin.lan.lib.number
 import org.bezsahara.minikotlin.lan.lib.return_
 import org.bezsahara.minikotlin.lan.lib.str
+import org.bezsahara.minikotlin.lan.lib.toStr
 import org.bezsahara.minikotlin.lan.lib.unbox
 import org.bezsahara.minikotlin.lan.lib.unboxNumber
 import org.bezsahara.minikotlin.lan.logic.*
@@ -103,10 +105,15 @@ object LoopsTests {
                 callNt2(ArrayList<Any>::add, arrayList, it).exec()
             }
 
+            arrayList.forEach {
+                echoLine(it.toStr())
+            }
+
             thisFun.return_(arrayList)
         }
         transformR.saveToTestFolderIfAny()
         val transform = transformR.initAndGetAsInterface<IterLoop>()
+//        transformR.printCode()
 
         assertEquals<Any>(arrayListOf(1,2,3,4,5), transform.test(listOf(1,2,3,4,5).iterator()))
         assertEquals<Any>(arrayListOf(1,"2",3,4,"5"), transform.test(listOf(1,"2",3,4,"5").iterator()))

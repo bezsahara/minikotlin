@@ -7,6 +7,7 @@ import org.bezsahara.minikotlin.builder.declaration.ofType
 import org.bezsahara.minikotlin.builder.declaration.returns
 import org.bezsahara.minikotlin.builder.declaration.static
 import org.bezsahara.minikotlin.builder.declaration.typeInfo
+import org.bezsahara.minikotlin.builder.implLambdaMiniKt
 import org.bezsahara.minikotlin.builder.makeClass
 import org.bezsahara.minikotlin.builder.opcodes.ext.areturn
 import org.bezsahara.minikotlin.builder.opcodes.ext.areturn_null
@@ -90,6 +91,12 @@ object Sys {
 
 object GeneralTest {
     var op = 500
+
+    fun createClass() {
+        val function: () -> Unit = implLambdaMiniKt {
+            echoLine(str("MiniKotlin!"))
+        }
+    }
 
 //    @org.junit.jupiter.api.parallel.Execution(ExecutionMode.CONCURRENT, reason = "Test class isolation")
 //    @RepeatedTest(10) // TODO create a different test to check out thread safety between instances of KBClass

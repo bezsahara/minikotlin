@@ -24,40 +24,6 @@ import kotlin.reflect.typeOf
 //    return implLambda(T::class.java, block)
 //}
 
-// Does not work as needed
-private fun <T: Function<*>> implLambda(functionJava: Class<T>, block: KBMethod.() -> Unit): T {
-    val invokeMethod = functionJava.methods.let {
-        if (it.size == 1) {
-            it[0]
-        } else {
-            error("")
-        }
-    }
-    require(functionJava.isInterface) { "Lambda type $functionJava is not an interface" }
-    if (Modifier.isFinal(invokeMethod.modifiers)) {
-        error("Method is final")
-    }
-    val result = KBClass.Builder("lambda${UUID.randomUUID().toString().replace("-", "")}", ClassProperties.Default).implements(functionJava).body {
-        autoInit()
-        var pId = -1
-        val name1 = invokeMethod.name
-        val md = KBMethod.Builder<Any>(
-            name1,
-            DeclarationProperty(Visibility.Public, isFinal = true, typeInfo = TypeInfo.Java(invokeMethod.returnType)),
-            invokeMethod.parameters.map { parameter ->
-                println("Param name is ${parameter.name}")
-                pId++
-                KBMethod.Parameter(parameter.name, TypeInfo.Java(parameter.type), pId, false)//.also { println("S - $it") }
-            },
-            ClassProperties.Default,
-            kbClass=this
-        )
-        md.runs(block)
-        addMethod(name1, md)
-    }.result()
-    return result.initAndGetAsInterface(functionJava, functionJava.classLoader)
-}
-
 
 inline fun <reified T: Function<*>> implLambdaMiniKt(noinline block: MiniKotlin<T>.() -> Unit): T {
     return implLambdaMiniKt(T::class.java, typeOf<T>(), block)
@@ -73,7 +39,7 @@ fun <T: Function<*>> implLambdaMiniKt(functionJava: Class<T>, kType: KType, bloc
     require(functionJava.isInterface) { "Lambda type $functionJava is not an interface" }
     val kTypeMapList = kType.arguments.map { (it.type?.classifier as? KClass<*>)?.javaObjectType ?: Any::class.java }
     val params = kTypeMapList.dropLast(1)
-    val rType = kTypeMapList.last()
+//    val rType = kTypeMapList.last()
     val invokeMethod = functionJava.methods.let {
         if (it.size == 1) {
             it[0]
@@ -87,10 +53,12 @@ fun <T: Function<*>> implLambdaMiniKt(functionJava: Class<T>, kType: KType, bloc
     val result = KBClass.Builder("lambda${UUID.randomUUID().toString().replace("-", "")}", ClassProperties.Default).implements(functionJava).body {
         autoInit()
         var pId = -1
-        val nameOfBridge = invokeMethod.name + "OF"
+        val originalName = invokeMethod.name
+        val nameOfBridge = originalName + "OF"
+        val returnTypeInfo = TypeInfo.Java(invokeMethod.returnType)
         val mdBridge = KBMethod.Builder<T>(
             nameOfBridge,
-            DeclarationProperty(Visibility.Private, isFinal = true, isStatic = true, typeInfo = TypeInfo.Java(invokeMethod.returnType)),
+            DeclarationProperty(Visibility.Private, isFinal = true, isStatic = true, typeInfo = returnTypeInfo),
             params.map { parameterType ->
                 pId++
                 KBMethod.Parameter("arg$pId", TypeInfo.Java(parameterType), pId, false)
@@ -104,10 +72,10 @@ fun <T: Function<*>> implLambdaMiniKt(functionJava: Class<T>, kType: KType, bloc
 
         // 0 is this object
         pId = 0
-        val name2 = invokeMethod.name
+        val name2 = originalName
         val md2 = KBMethod.Builder<T>(
             name2,
-            DeclarationProperty(Visibility.Public, isFinal = true, typeInfo = TypeInfo.Java(invokeMethod.returnType)),
+            DeclarationProperty(Visibility.Public, isFinal = true, typeInfo = returnTypeInfo),
             params.map { parameterType ->
                 pId++
                 KBMethod.Parameter("arg$pId", TypeInfo.Object, pId, false)
