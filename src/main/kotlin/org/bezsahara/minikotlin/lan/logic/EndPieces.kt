@@ -6,7 +6,7 @@ import org.bezsahara.minikotlin.lan.KRef
 import org.bezsahara.minikotlin.lan.KValue
 import org.bezsahara.minikotlin.lan.StackInfo
 
-class ThrowPiece(
+class ThrowValue(
     ref: KRef<*>,
 ) : KValue.ValueBlock(arrayOf(ref)) {
     override fun KBMethod.init(variables: Map<String, Int>, stackInfo: StackInfo) {

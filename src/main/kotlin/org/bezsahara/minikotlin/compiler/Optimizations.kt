@@ -15,6 +15,9 @@ import java.util.*
 // 44  IFEQ L(TExit)[11]
 object Optimizations {
     fun useAll(operations: List<KBByteCode>): List<KBByteCode> {
+//        if (true) {
+//            return operations
+//        }
 //        if (false) {
 //            return removeUnusedLabels(shortenLabelReach(removeUnusedLabels(operations)))
 //        }
@@ -167,7 +170,7 @@ object Optimizations {
 
             if (operationOldIndex + 1 >= operations.lastIndex) continue
 
-            if (operation is LabelPoint) { // find the pattern
+            if (operation is LabelPoint && operation.label.labelType != LabelType.CatchBlockOnly) { // find the pattern
                 val next = operations[operationOldIndex + 1].actual()
                 if (next is KBJumpOP && next.instruction == JumpInsnOp.GOTO) {
                     val lr = LabelReach(

@@ -4,7 +4,9 @@ import org.bezsahara.minikotlin.builder.KBMethod
 import org.bezsahara.minikotlin.builder.declaration.TypeInfo
 import org.bezsahara.minikotlin.builder.declaration.sameAs
 import org.bezsahara.minikotlin.builder.opcodes.ext.*
+import org.bezsahara.minikotlin.builder.opcodes.method.KBTryCatchBlockOP
 import org.bezsahara.minikotlin.builder.opcodes.method.Label
+import org.bezsahara.minikotlin.builder.opcodes.method.th
 import org.bezsahara.minikotlin.lan.KRef
 import org.bezsahara.minikotlin.lan.KValue
 import org.bezsahara.minikotlin.lan.KVar
@@ -35,7 +37,8 @@ class VariableManager private constructor(
     constructor() : this(0, mutableMapOf(), 0)
 
     fun createAChild(): VariableManager {
-        return VariableManager(highestIndexCounter, varIndexMap, anonIndex)
+        // Changed to mut map
+        return VariableManager(highestIndexCounter, varIndexMap.toMutableMap(), anonIndex)
     }
 
     fun createAnonName(): String {
@@ -135,6 +138,68 @@ class MiniKotlinCompiler(
 //            is CustomActionPieceReturns -> processCustomActionR(codePiece)
             is SwitchPiece.LookUpTable -> processLookupTable(actionPiece)
             is SwitchPiece.Table -> processSwitchPieceTable(actionPiece)
+            is ThrowPiece -> processThrowPiece(actionPiece)
+        }
+    }
+
+    data class ThrowPieceLabel(
+        val startLabel: Label,
+        val endLabel: Label,
+        val startCatchStart: Label,
+        val endCatchEnd: Label,
+        val indexToInsert: Int
+    ) {
+        var errorType: Class<*>? = null
+    }
+
+    private val throwPieceMap = IntObjectHashMap<ThrowPieceLabel>()
+
+    private fun processThrowPiece(throwPiece: ThrowPiece) {
+        when (throwPiece) {
+            is ThrowPiece.TryStart -> {
+                initNewVariableManager()
+                val indexToInsert = kbMethod.currentIndex + 1
+                val labels = ThrowPieceLabel(
+                    Label(), Label(), Label(), Label(), indexToInsert
+                )
+                kbMethod.labelPoint(labels.startLabel)
+                throwPieceMap.put(currentCodePieceIndex, labels)
+            }
+            is ThrowPiece.TryEnd -> {
+                removeLastVariableManager()
+                val labels = throwPieceMap[throwPiece.tryStartId]!!
+                kbMethod.labelPoint(labels.endLabel)
+                kbMethod.goto(labels.endCatchEnd)
+            }
+            is ThrowPiece.CatchStart -> {
+                initNewVariableManager()
+                val labels = throwPieceMap[throwPiece.tryStartId]!!
+                labels.errorType = throwPiece.errorType
+                kbMethod.labelPoint(labels.startCatchStart)
+                val catchVariable = throwPiece.catchVariable
+                if (catchVariable == null) {
+                    kbMethod.pop()
+                } else {
+                    kbMethod.astore(variableManager.variableIndex(catchVariable.name, false), catchVariable.name,
+                        TypeInfo.Java(catchVariable.jClass))
+//                    compileReference(kbMethod, catchVariable)
+                }
+            }
+            is ThrowPiece.CatchEnd -> {
+                removeLastVariableManager()
+                val labels = throwPieceMap[throwPiece.tryStartId]!!
+                kbMethod.labelPoint(labels.endCatchEnd)
+                val errorType = labels.errorType
+                if (errorType == null)
+                    error("Error type was not set!")
+
+                kbMethod.addOperationAtIndex(labels.indexToInsert, KBTryCatchBlockOP(
+                    labels.startLabel,
+                    labels.endLabel,
+                    labels.startCatchStart,
+                    TypeInfo.Java(errorType)
+                ))
+            }
         }
     }
 
