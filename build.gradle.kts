@@ -1,14 +1,31 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import java.nio.file.Path
-
+import org.bezsahara.minikotlin.gradle.MiniKotlinRunMode
 
 plugins {
     kotlin("jvm") version "2.2.0"
+    id("org.bezsahara.minikotlin")
     id("com.gradleup.shadow") version "9.0.0-rc1"
 }
 
 group = "org.bezsahara"
 version = "1.0-SNAPSHOT"
+
+
+
+minikotlin {
+    // MANUAL - wire tasks manually
+    // AUTO - plugin wires generateMiniKotlin after classes
+    // default is AUTO
+    runMode = MiniKotlinRunMode.AUTO
+
+    // Sets the path to stubs folder, set it outside the build folder.
+    // default is <buildDir>/minikotlin-stubs
+    stubFolder.set(project.layout.projectDirectory.dir("mk-custom-stubs"))
+
+    // Sets the path to implementation folder.
+    // default is <buildDir>/minikotlin-gen
+    generateFolder.set(project.layout.buildDirectory.dir("mk-custom-gen"))
+}
 
 repositories {
     mavenCentral()
@@ -16,10 +33,6 @@ repositories {
 
 tasks.test {
     systemProperty("compiled_folder", project.file("compiled/temp").absolutePath)
-}
-
-tasks.register("sss") {
-    println("Gradle version: ${gradle.gradleVersion}")
 }
 
 val fatJar = tasks.register<ShadowJar>("thinJar") {

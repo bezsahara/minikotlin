@@ -18,8 +18,8 @@ class ThisClassInfo(val originalName: String, val shadowClass: Class<*>) : TypeI
     }
 
     companion object {
-        fun withAutoShadow(name: String, interfaces: Array<String>? = null): ThisClassInfo {
-            return ThisClassInfo(name, ClassUtils.generateEmptyClass("${name}Shadow", interfaces))
+        fun withAutoShadow(fullName: String, interfaces: Array<String>? = null): ThisClassInfo {
+            return ThisClassInfo(fullName, ClassUtils.generateEmptyClass("${fullName}Shadow", interfaces))
         }
     }
 }
