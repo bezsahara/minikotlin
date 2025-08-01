@@ -39,15 +39,19 @@ class KBClass(
     private val implementing: List<TypeInfo>,
     val name: String,
     val classProperties: ClassProperties,
+    val extends: TypeInfo?
 ) {
-    class Result(
+//    val justName = name.split("/").last()
+
+    data class Result(
         val name: String,
         val interfaces: List<TypeInfo>,
         val methodsResult: List<KBMethod.Result>,
         val fields: List<KBField>,
         val compiler: KBCompiler,
         val classProperties: ClassProperties,
-        val thisClassInfo: ThisClassInfo
+        val thisClassInfo: ThisClassInfo,
+        val extends: TypeInfo?
     ) {
 
         fun saveToFolder(path: String) {
@@ -164,7 +168,8 @@ class KBClass(
             fields.toList(),
             compiler,
             classProperties,
-            ThisClass
+            ThisClass,
+            extends
         ).also {
             KeyStorage0.getKBKey(idOfKey).build()
         }
@@ -172,6 +177,13 @@ class KBClass(
 
     class Builder(val name: String, val classProperties: ClassProperties) {
         val implementing = mutableListOf<TypeInfo>()
+        var extends: TypeInfo? = null
+            private set
+
+        infix fun extends(clazz: KClass<out Any>): Builder {
+            extends = TypeInfo.Kt(clazz)
+            return this
+        }
 
         infix fun implements(other: KClass<out Any>): Builder {
             implementing.add(TypeInfo.Kt(other))
@@ -189,7 +201,7 @@ class KBClass(
         }
 
         inline infix fun body(block: KBClass.() -> Unit): KBClass {
-            return KBClass(implementing, name, classProperties).also(block)
+            return KBClass(implementing, name, classProperties, extends).also(block)
         }
     }
 

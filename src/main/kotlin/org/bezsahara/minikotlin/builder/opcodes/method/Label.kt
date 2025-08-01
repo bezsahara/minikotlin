@@ -19,8 +19,14 @@ fun th() {
 
 class Label(var name: String?) {
     constructor() : this(null)
+
+    // Used for optimizations
     var labelType: LabelType = LabelType.Unknown
         private set
+
+    fun isLabelUnknown(): Boolean {
+        return labelType == LabelType.Unknown
+    }
 
     fun markAsCatchBlock() {
         labelType = LabelType.CatchBlockOnly

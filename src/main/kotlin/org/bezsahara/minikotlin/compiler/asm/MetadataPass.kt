@@ -5,7 +5,7 @@ import org.bezsahara.minikotlin.builder.declaration.TypeInfo
 import org.bezsahara.minikotlin.builder.opcodes.method.*
 
 class MetadataPass {
-    private class NameScope(val variableKey: VariableKey) {
+    private data class NameScope(val variableKey: VariableKey) {
         var startLabel: Label? = null
 
         val endCandidates = ArrayDeque<Label>()
@@ -66,7 +66,7 @@ class MetadataPass {
         variableMap.values.forEach {
             val endLabel = it.endCandidates.last()
 
-            val startLabel = it.startLabel!!
+            val startLabel = it.startLabel ?: error("startLabel is null at $it")
             variableInfo.add(LocalVariableMetadata(
                 it.variableKey.name,
                 it.variableKey.typeInfo,

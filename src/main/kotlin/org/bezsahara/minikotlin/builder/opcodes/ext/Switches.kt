@@ -4,6 +4,7 @@ import org.bezsahara.minikotlin.builder.KBMethod
 import org.bezsahara.minikotlin.builder.opcodes.method.KBLookupSwitchOP
 import org.bezsahara.minikotlin.builder.opcodes.method.KBTableSwitchOP
 import org.bezsahara.minikotlin.builder.opcodes.method.Label
+import java.util.Arrays
 
 fun KBMethod.tableSwitch(
     min: Int,
@@ -54,4 +55,30 @@ fun KBMethod.lookupSwitch(
             cases[it].second
         }
     ))
+}
+
+
+fun KBMethod.autoSwitch(
+    default: Label,
+    keys: IntArray,
+    cases: Array<Label>
+) {
+    Arrays.sort(keys)
+
+    val min = keys.first()
+    val max = keys.last()
+
+    val range = max - min + 1
+    val density = keys.size.toDouble() / range
+
+    // JVM tends to prefer tableswitch if at least ~50% of range is covered
+
+    if (density >= 0.5) {
+        tableSwitch(min, max, default, Array(range) { i ->
+            val idx = keys.indexOf(min + i)
+            if (idx == -1) default else cases[idx]
+        })
+    } else {
+        lookupSwitch(default, keys, cases)
+    }
 }

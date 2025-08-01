@@ -1,33 +1,18 @@
 package org.bezsahara.minikotlin
 
 import org.bezsahara.minikotlin.builder.implLambdaMiniKt
-import org.bezsahara.minikotlin.lan.KRef
-import org.bezsahara.minikotlin.lan.lib.asJavaObj
-import org.bezsahara.minikotlin.lan.lib.bool
-import org.bezsahara.minikotlin.lan.lib.echo
-import org.bezsahara.minikotlin.lan.lib.echoLine
+import org.bezsahara.minikotlin.builder.singleFunImplMiniKt
+import org.bezsahara.minikotlin.lan.lib.*
 import org.bezsahara.minikotlin.lan.lib.kinds.getClass
 import org.bezsahara.minikotlin.lan.lib.kinds.miniClassNtOf
 import org.bezsahara.minikotlin.lan.lib.kinds.miniClassOf
-import org.bezsahara.minikotlin.lan.lib.nullValue
-import org.bezsahara.minikotlin.lan.lib.number
-import org.bezsahara.minikotlin.lan.lib.objectRefOf
-import org.bezsahara.minikotlin.lan.lib.return_
-import org.bezsahara.minikotlin.lan.lib.str
-import org.bezsahara.minikotlin.lan.logic.call
-import org.bezsahara.minikotlin.lan.logic.call1
-import org.bezsahara.minikotlin.lan.logic.call2
-import org.bezsahara.minikotlin.lan.logic.call3
-import org.bezsahara.minikotlin.lan.logic.eq
-import org.bezsahara.minikotlin.lan.logic.isNotNull
+import org.bezsahara.minikotlin.lan.logic.*
 import org.bezsahara.minikotlin.lan.pieces.exec
 import org.bezsahara.minikotlin.lan.toVariable
 import javax.swing.JFrame
 import javax.swing.JLabel
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
-
 
 
 object OtherTests {
@@ -138,5 +123,35 @@ object OtherTests {
 
         assertEquals("true", ins(SomeOther::class.java))
         assertEquals("false", ins(OtherTests::class.java))
+    }
+
+
+    interface NameP {
+        fun test()
+    }
+
+
+    // TODO really needs to be fixed. Verifier fails to check that variable. And some null pointer I have no idea even where
+    @Test
+    fun `variable naming problem`() {
+        val res = singleFunImplMiniKt(NameP::class, NameP::test) {
+            if_(bool(true)) {
+                variable<String>("hi") setTo str("What do you want")
+            } else_ {
+                variable<Int>("bye") setTo boxNumber(2)
+            }
+
+            echoLine(variable<String>("hi"))
+
+            thisFun.return_(objectRefOf(Unit))
+        }
+
+//        res.printCode()
+//        res.toByteArray()
+
+//        val ins = res.initAndGetAsInterface<NameP>()
+
+//        assertEquals("true", ins(SomeOther::class.java))
+//        assertEquals("false", ins(OtherTests::class.java))
     }
 }

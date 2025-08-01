@@ -196,6 +196,7 @@ sealed class TypeInfo : TypeHold {
         @JvmField val Double = Kt(kotlin.Double::class)
 
         @JvmField val String = Kt(kotlin.String::class)
+        @JvmField val Throwable = Java(java.lang.Throwable::class.java)
         @JvmField val Class = Java(java.lang.Class::class.java)
 
         @JvmField val IntObj = Java(java.lang.Integer::class.java)

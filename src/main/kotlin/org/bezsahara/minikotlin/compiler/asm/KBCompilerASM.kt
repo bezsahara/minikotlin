@@ -79,7 +79,7 @@ class KBCompilerASM(
             Opcodes.ACC_PUBLIC or Opcodes.ACC_FINAL or Opcodes.ACC_SUPER,
             kbClassResult.name,
             null,
-            "java/lang/Object",
+            kbClassResult.extends?.getStringRep() ?: "java/lang/Object",
             kbClassResult.interfaces.mapA {
                 it.getStringRep()
             }

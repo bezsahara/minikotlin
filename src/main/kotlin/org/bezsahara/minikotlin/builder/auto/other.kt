@@ -3,7 +3,6 @@ package org.bezsahara.minikotlin.builder.auto
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.*
-import java.util.*
 
 object ClassUtils {
 
@@ -26,12 +25,7 @@ object ClassUtils {
 
         // ----- loader -----
         return object : ClassLoader(this::class.java.classLoader) {
-            fun define() = defineClass(className, bytes, 0, bytes.size)
+            fun define() = defineClass(className.replace("/", "."), bytes, 0, bytes.size)
         }.define()
     }
-}
-
-fun main() {
-    val k =ClassUtils.generateEmptyClass(UUID.randomUUID().toString().replace("-", ""))
-    println(k)
 }
