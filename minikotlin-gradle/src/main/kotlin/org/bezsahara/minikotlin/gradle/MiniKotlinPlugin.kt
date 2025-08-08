@@ -16,7 +16,14 @@ class MiniKotlinPlugin : Plugin<Project> {
 
 
         project.dependencies.add("compileOnly", project.files(ext.stubFolder))
-        project.dependencies.add("runtimeOnly", project.files(ext.generateFolder))
+//        project.dependencies.add("runtimeOnly", project.files(ext.generateFolder))
+
+        project.extensions.getByType(JavaPluginExtension::class.java)
+            .sourceSets.getByName("main") {
+//                resources.srcDir(ext.stubFolder)
+                output.dir(ext.generateFolder)
+            }
+
         val configureMiniKotlin = project.tasks.register("configureMiniKotlin") {
             group = "minikotlin"
             description = "Ensures stub and generate folders exist"
@@ -50,19 +57,16 @@ class MiniKotlinPlugin : Plugin<Project> {
             }
         }
         project.afterEvaluate {
-
             when (ext.runMode.get()) {
                 MiniKotlinRunMode.AUTO -> {
                     tasks.named("classes") {
                         finalizedBy(tasks.named("generateMiniKotlin"))
                     }
                 }
-                MiniKotlinRunMode.MANUAL -> {
+                else -> { // MiniKotlinRunMode.MANUAL -> {
                     // do nothing, user wires manually
                 }
             }
-
-
         }
     }
 

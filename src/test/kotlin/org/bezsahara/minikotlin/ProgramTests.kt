@@ -7,7 +7,6 @@ import org.bezsahara.minikotlin.builder.declaration.ofType
 import org.bezsahara.minikotlin.builder.declaration.returns
 import org.bezsahara.minikotlin.builder.declaration.static
 import org.bezsahara.minikotlin.builder.makeClass
-import org.bezsahara.minikotlin.builder.opcodes.ext.dconst_0
 import org.bezsahara.minikotlin.builder.opcodes.ext.dup
 import org.bezsahara.minikotlin.builder.opcodes.ext.iadd
 import org.bezsahara.minikotlin.builder.opcodes.ext.iconst_1
@@ -18,7 +17,6 @@ import org.bezsahara.minikotlin.builder.opcodes.ext.invokestatic
 import org.bezsahara.minikotlin.builder.opcodes.ext.ireturn
 import org.bezsahara.minikotlin.builder.opcodes.ext.isub
 import org.bezsahara.minikotlin.builder.opcodes.ext.labelPoint
-import org.bezsahara.minikotlin.builder.opcodes.ext.ladd
 import org.bezsahara.minikotlin.lan.lib.get
 import org.bezsahara.minikotlin.lan.lib.miniIntArray
 import org.bezsahara.minikotlin.lan.lib.miniIntArrayOf
@@ -35,12 +33,9 @@ import org.bezsahara.minikotlin.lan.logic.whileDo
 import org.bezsahara.minikotlin.lan.other.AbstractInstanceObject
 import org.bezsahara.minikotlin.lan.runsMiniKt
 import org.bezsahara.minikotlin.lan.toVariable
-import java.io.File
-import kotlin.reflect.KCallable
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertSame
 
 interface FibCustom {
     fun action(n: Int): Int
@@ -68,7 +63,7 @@ object ProgramTests {
     @Test
     fun `fibonacci works`() {
         val cl = makeClass("fibTest") implements FibTest::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             implOf(FibTest()::fib) runsMiniKt {
                 val n = variableNt<Int>("n") // a parameter of the function
@@ -124,7 +119,7 @@ object ProgramTests {
     @Test
     fun `fibonacci in bytecode`() {
         val k = makeClass("someFib", ClassProperties.Default) implements FibCustom::class implements FibTest::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             private static final ofType(Int::class) method "fibB"("n" to TypeInfo.Kt(Int::class)) runs {
                 val lessThanTwoLabel = label("lessThanTwo")

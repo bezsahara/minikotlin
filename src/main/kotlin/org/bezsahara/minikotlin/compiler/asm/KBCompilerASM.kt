@@ -34,13 +34,21 @@ class KBCompilerASM(
 
     private fun compileFields(classWriter: ClassVisitor, fields: List<KBField>) {
         for (field in fields) {
-            classWriter.visitField(
+            val vf = classWriter.visitField(
                 field.declarationProperty.getASMOpcodes(),
                 field.name,
                 field.declarationProperty.typeInfo!!.getReturnStringRep(),
                 null,
                 field.value
             )
+            field.declarationProperty.annotations.let {
+                if (it.isNotEmpty()) {
+                    for (ann in it) {
+                        vf.visitAnnotation(ann.getReturnStringRep(), asmVisibleFor(ann)).visitEnd()
+                    }
+                }
+            }
+            vf.visitEnd()
         }
     }
 
@@ -57,15 +65,24 @@ class KBCompilerASM(
                 null,
                 emptyArray()
             )
+
+            method.methodProperty.annotations.let {
+                if (it.isNotEmpty()) {
+                    for (ann in it) {
+                        mv.visitAnnotation(ann.getReturnStringRep(), asmVisibleFor(ann)).visitEnd()
+                    }
+                }
+            }
+
             mv.visitCode()
             compileMethod(mv, method)
-//            mv.visitLineNumber()
             mv.visitMaxs(0,0)
             mv.visitEnd()
         }
     }
 
     private fun processClass(kbClassResult: KBClass.Result, cw: ClassWriter): ClassVisitor {
+        // Used for debug
         val classWriter = if (false) {
             TraceClassVisitor(
                 cw,

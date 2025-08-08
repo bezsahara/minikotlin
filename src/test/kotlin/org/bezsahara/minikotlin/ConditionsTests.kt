@@ -1,11 +1,8 @@
 package org.bezsahara.minikotlin
 
 import org.bezsahara.minikotlin.builder.makeClass
-import org.bezsahara.minikotlin.lan.lib.echo
-import org.bezsahara.minikotlin.lan.lib.echoLine
 import org.bezsahara.minikotlin.lan.lib.number
 import org.bezsahara.minikotlin.lan.lib.return_
-import org.bezsahara.minikotlin.lan.lib.str
 import org.bezsahara.minikotlin.lan.logic.not
 import org.bezsahara.minikotlin.lan.runsMiniKt
 import org.bezsahara.minikotlin.lan.toVariable
@@ -21,7 +18,7 @@ object ConditionsTests {
     @Test
     fun `separate if else`() {
         val cl = makeClass("testIfElse") implements IfElseTest::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             implOf(IfElseTest::test) runsMiniKt {
                 val flag = variableNt<Boolean>("flag")
@@ -53,7 +50,7 @@ object ConditionsTests {
     @Test
     fun `if else`() {
         val cl = makeClass("testIfElse") implements IfElseTest::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             implOf(IfElseTest::test) runsMiniKt {
                 val flag = variableNt<Boolean>("flag")
@@ -90,7 +87,7 @@ object ConditionsTests {
     fun `if else fails`() {
         assertThrows<IllegalStateException> {
             makeClass("testIfElse") implements IfElseTest::class body {
-                autoInit()
+                this.autoInitAndReturn()
 
                 implOf(IfElseTest::test) runsMiniKt {
                     val flag = variableNt<Boolean>("flag")

@@ -1,10 +1,9 @@
 package org.bezsahara.minikotlin.builder
 
-import com.sun.source.util.Plugin
 import org.bezsahara.minikotlin.builder.auto.KeyStoreInfo
 import org.bezsahara.minikotlin.builder.auto.insertAutoInitForKBS
 import org.bezsahara.minikotlin.builder.declaration.*
-import org.bezsahara.minikotlin.builder.opcodes.ext.autoInit
+import org.bezsahara.minikotlin.builder.opcodes.ext.autoInitAndReturn
 import org.bezsahara.minikotlin.builder.opcodes.method.LabelPoint
 import org.bezsahara.minikotlin.builder.plugin.PluginData
 import org.bezsahara.minikotlin.builder.plugin.PluginKey
@@ -61,20 +60,40 @@ class KBClass(
         private var classByteCode: ByteArray? = null
 
         fun printCode(appendable: Appendable = System.out) {
-            methodsResult.forEach {
+            methodsResult.forEach { m ->
                 var numIndex = 0
-                val ppp = it.parameters.joinToString(prefix = "(", postfix = ")") { it.typeInfo.getReturnStringRep() }
-                appendable.appendLine($$"$ --- Function: $${it.methodProperty} $${it.name}$$ppp")
-                it.operations.forEachIndexed { index, op ->
-                    val unPacked = op.actual()
-                    if (unPacked !is LabelPoint) {
-                        appendable.append(numIndex.toString().padStart(3))
-                        appendable.append("  ")
-                    } else {
-                        appendable.append("   ")
+                val sig = m.parameters.joinToString(prefix = "(", postfix = ")") { it.typeInfo.getReturnStringRep() }
+                appendable.append(" --- Function: ${m.methodProperty} ${m.name}$sig").append('\n')
+
+                val indexWidth = maxOf(3, (m.operations.size - 1).toString().length)
+                val padIndex = " ".repeat(indexWidth)
+                val padLIndex = " ".repeat(indexWidth-1)
+                val gap = "  "
+
+                for (op in m.operations) {
+                    val a = op.actual()
+                    val s = a.toString()
+
+                    // no index before labels; keep alignment
+                    val prefix = if (a is LabelPoint) padLIndex else numIndex.toString().padStart(indexWidth, ' ')
+                    appendable.append(prefix).append(gap)
+
+                    // fast manual split (avoid allocations from .lines()/.split)
+                    var i = 0
+                    while (true) {
+                        val j = s.indexOf('\n', i)
+                        if (j < 0) {
+                            appendable.append(s, i, s.length).append('\n')
+                            break
+                        } else {
+                            appendable.append(s, i, j).append('\n')
+                            // continuation lines aligned under text (no index)
+                            appendable.append(padIndex).append(gap)
+                            i = j + 1
+                        }
                     }
+
                     numIndex++
-                    appendable.appendLine(unPacked.toString())
                 }
             }
         }
@@ -241,6 +260,14 @@ class KBClass(
     @Suppress("PropertyName")
     val ThisClass = ThisClassInfo.withAutoShadow(name, implementing.mapA { it.getStringRep() })
 
+    fun annotation(a: TypeInfo): DeclarationProperty<DP.Both, TypeHold.None> {
+        return DeclarationProperty(Visibility.None, annotations = arrayListOf(a))
+    }
+
+    fun annotationsOf(vararg a: TypeInfo): DeclarationProperty<DP.Both, TypeHold.None>  {
+        return DeclarationProperty(Visibility.None, annotations = ArrayList(a.asList()))
+    }
+
     operator fun String.invoke(vararg params: Pair<String, TypeInfo>): KBClass.StringWithParam {
         return KBClass.StringWithParam(this) { or ->
             var idx = 0
@@ -262,13 +289,16 @@ class KBClass(
         public ofType TypeInfo.Void method "<init>" runs (block)
     }
 
+    fun init(): KBMethod.Builder<Any> {
+        return public ofType TypeInfo.Void method "<init>"
+    }
+
     val pluginMap = IdentityHashMap<PluginKey, PluginData>()
 
     // Auto inits the init. It just calls init of the Object
-    fun autoInit(block: KBMethod.() -> Unit = {}) {
+    fun autoInitAndReturn() {
         init {
-            block()
-            autoInit()
+            this.autoInitAndReturn()
         }
     }
 

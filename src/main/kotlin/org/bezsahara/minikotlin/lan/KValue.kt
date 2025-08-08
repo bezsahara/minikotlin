@@ -18,7 +18,11 @@ inline fun kValueReturns(objTypeInfo: TypeInfo, crossinline returns: KBMethod.()
     }
 }
 
-inline fun kValueReturns(objTypeInfo: TypeInfo, args: Array<KRef<*>>, crossinline returns: KBMethod.() -> Unit): KValue.ValueBlockReturns {
+inline fun kValueReturns(
+    objTypeInfo: TypeInfo,
+    args: Array<KRef<*>>,
+    crossinline returns: KBMethod.() -> Unit,
+): KValue.ValueBlockReturns {
     return object : KValue.ValueBlockReturns(args) {
         override fun KBMethod.returns(
             variables: Map<String, Int>,
@@ -28,6 +32,24 @@ inline fun kValueReturns(objTypeInfo: TypeInfo, args: Array<KRef<*>>, crossinlin
         }
 
         override val objType: TypeInfo = objTypeInfo
+    }
+}
+
+class PerformAction(private val block: Scope.() -> Unit) : KValue.ValueBlock(null) {
+    override fun KBMethod.init(
+        variables: Map<String, Int>,
+        stackInfo: StackInfo,
+    ) {
+        variablesInner = variables
+        stackInfoInner = stackInfo
+        Scope().block()
+    }
+    private var variablesInner: Map<String, Int>? = null
+    private var stackInfoInner: StackInfo? = null
+
+    inner class Scope {
+        val variables: Map<String, Int> get() = variablesInner!!
+        val stackInfo: StackInfo get() = stackInfoInner!!
     }
 }
 
@@ -77,6 +99,7 @@ sealed interface KValue {
         init {
             error("Does not work")
         }
+
         constructor() : this(emptyArray())
 
         abstract fun KBMethod.assignsOrReturns(
@@ -103,6 +126,7 @@ sealed interface KValue {
         constructor(pushed3: KRef<*>, pushed2: KRef<*>, pushed1: KRef<*>) : this(
             arrayOf(pushed3, pushed2, pushed1)
         )
+
         constructor() : this(emptyArray())
 
         // TODO check if it pushes just one value
@@ -120,6 +144,7 @@ fun KValue.getType(): TypeInfo {
                 TypeInfo.Java(v::class.javaPrimitiveType!!)
             }
         }
+
         is KValue.VB -> objType
         else -> TypeInfo.Object
     }

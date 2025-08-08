@@ -77,10 +77,10 @@ class VariableManager private constructor(
 
 class MiniKotlinCompiler(
     actionPiecesList: List<ActionPiece>,
-    val variableMap: HashMap<String, KVar<*>>,
+    variableMap: HashMap<String, KVar<*>>,
     val kbMethod: KBMethod,
 ) {
-    val actionPieces: Array<ActionPiece> = CodePiecesMap(actionPiecesList).array
+    private val actionPieces: Array<ActionPiece> = CodePiecesMap(actionPiecesList).array
     private var highestIndexCounter = 0
 
     private val variableDeque = ArrayDeque<VariableManager>()
@@ -118,7 +118,7 @@ class MiniKotlinCompiler(
         }
     }
 
-    val variableManager get() = variableDeque.last()
+    private val variableManager get() = variableDeque.last()
 
     private var currentCodePieceIndex = 0
     fun compile() {
@@ -189,9 +189,7 @@ class MiniKotlinCompiler(
                 removeLastVariableManager()
                 val labels = throwPieceMap[throwPiece.tryStartId]!!
                 kbMethod.labelPoint(labels.endCatchEnd)
-                val errorType = labels.errorType
-                if (errorType == null)
-                    error("Error type was not set!")
+                val errorType = labels.errorType ?: error("Error type was not set!")
 
                 kbMethod.addOperationAtIndex(labels.indexToInsert, KBTryCatchBlockOP(
                     labels.startLabel,
@@ -405,9 +403,9 @@ class MiniKotlinCompiler(
                 kbMethod.labelPoint(label)
                 if (kValue != null) {
                     if (kValue is CanAcceptLabels && kValue.trySupplyLabels(bodyLabel, nextLabel)) {
-                        compileReference(kbMethod, conditionBlock.condition, Int.MIN_VALUE)
+                        compileReference(kbMethod, conditionBlock.condition)
                     } else {
-                        compileReference(kbMethod, conditionBlock.condition, Int.MIN_VALUE)
+                        compileReference(kbMethod, conditionBlock.condition)
                         kbMethod.ifeq(nextLabel)
                     }
                     kbMethod.labelPoint(bodyLabel)
@@ -426,42 +424,28 @@ class MiniKotlinCompiler(
     }
 
     private fun processCustomAction(cap: CustomActionPiece) {
-        writeValue(kbMethod, cap.kValue, Int.MIN_VALUE, null)
+        writeValue(kbMethod, cap.kValue, null)
     }
 
-    //data class VariableGet(
-    //    val varName: String,
-    //    val value: KRef<*>,
-    //    override val id: Int
-    //) : VariablePiece
-    //data class VariableSet(
-    //    val varName: String,
-    //    val variable: KVar<*>,
-    //    val value: KRef<*>,
-    //    override val id: Int
-    //) : VariablePiece {
-    //    val variableIsField: Boolean get() = variable.value is KValue.FieldResult
-    //}
     private fun processVariable(variablePiece: VariableSet) {
         val idx = variableManager.variableIndexAuto(
             variablePiece.variable.name,
             variablePiece.variable.kClass,
             variablePiece.variable is KVar.Native
         )
-        if (compileReference(kbMethod, variablePiece.value, idx) == 0) {
-            kbMethod.apply {
-                if (variablePiece.variable is KVar.Native) {
-                    storeAuto(idx, variablePiece.variable.kClass, variablePiece.varName, TypeInfo.Java(variablePiece.variable.jClass))
-                } else {
-                    astore(idx, variablePiece.varName, TypeInfo.Java(variablePiece.variable.jClass))
-                }
+        compileReference(kbMethod, variablePiece.value)
+        kbMethod.apply {
+            if (variablePiece.variable is KVar.Native) {
+                storeAuto(idx, variablePiece.variable.kClass, variablePiece.varName, TypeInfo.Java(variablePiece.variable.jClass))
+            } else {
+                astore(idx, variablePiece.varName, TypeInfo.Java(variablePiece.variable.jClass))
             }
         }
     }
 
     // returns 0 for no effects
     // returns 10 for variable assign effect
-    fun compileReference(kbm: KBMethod, r: KRef<*>, assignable: Int = Int.MIN_VALUE): Int {
+    private fun compileReference(kbm: KBMethod, r: KRef<*>) {
         when (r) {
             is KVar -> {
                 if (r.initialized) {
@@ -484,19 +468,18 @@ class MiniKotlinCompiler(
             }
 
             is KRef.Native<*> -> {
-                return writeValue(kbm, r.value, assignable, null)
+                writeValue(kbm, r.value, null)
             }
 
             is KRef.Obj<*> -> {
-                return writeValue(kbm, r.value, assignable, r.jClass)
+                writeValue(kbm, r.value, r.jClass)
             }
 
             KRef.Nothing -> Unit // Just do nothing
         }
-        return 0
     }
 
-    private fun writeValue(kbm: KBMethod, value: KValue, assignable: Int, intendedValue: Class<*>?): Int {
+    private fun writeValue(kbm: KBMethod, value: KValue, intendedValue: Class<*>?) {
         when (value) {
             is KValue.Current<*> -> {
                 value.applyToKB(kbm)
@@ -578,7 +561,7 @@ class MiniKotlinCompiler(
 //                }
             }
         }
-        return 0
+        return
     }
 }
 

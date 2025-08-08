@@ -3,17 +3,11 @@ package org.bezsahara.minikotlin
 import org.bezsahara.minikotlin.builder.implLambdaMiniKt
 import org.bezsahara.minikotlin.builder.makeClass
 import org.bezsahara.minikotlin.lan.lib.bool
-import org.bezsahara.minikotlin.lan.lib.boxBool
 import org.bezsahara.minikotlin.lan.lib.boxNumber
 import org.bezsahara.minikotlin.lan.lib.castTo
-import org.bezsahara.minikotlin.lan.lib.echoLine
 import org.bezsahara.minikotlin.lan.lib.instanceOf
-import org.bezsahara.minikotlin.lan.lib.kinds.miniClassOf
 import org.bezsahara.minikotlin.lan.lib.return_
-import org.bezsahara.minikotlin.lan.lib.toStr
 import org.bezsahara.minikotlin.lan.logic.and
-import org.bezsahara.minikotlin.lan.logic.call
-import org.bezsahara.minikotlin.lan.logic.call1
 import org.bezsahara.minikotlin.lan.logic.callNt1
 import org.bezsahara.minikotlin.lan.logic.end
 import org.bezsahara.minikotlin.lan.logic.math.asInt
@@ -46,7 +40,7 @@ object BooleanTests {
     @Test
     fun `boolean operations okay`() {
         val cl = makeClass("boolTest") implements BoolTest::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             implOf(BoolTest()::test) runsMiniKt {
                 val opId = variableNt<Int>("opId")
