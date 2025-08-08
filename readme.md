@@ -34,7 +34,6 @@ dependencies {
 ```
 
 ### Gradle plugin
-**Note:** plugin is currently being published, so it might not be available right now!
 
 You can use Gradle plugin, that allows compile-time code generation. It is available on Gradle Plugin Portal.
 Just add this to your build logic:
