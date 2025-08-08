@@ -55,7 +55,6 @@ import org.bezsahara.minikotlin.lan.other.AbstractInstanceObject
 import org.bezsahara.minikotlin.lan.pieces.exec
 import org.bezsahara.minikotlin.lan.runsMiniKt
 import org.bezsahara.minikotlin.lan.toVariable
-import org.junit.jupiter.api.RepeatedTest
 import java.lang.StringBuilder
 //import org.junit.jupiter.api.RepeatedTest
 //import org.junit.jupiter.api.assertThrows
@@ -65,10 +64,7 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import javax.swing.JFrame
 import javax.swing.JLabel
-import kotlin.concurrent.thread
-import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 interface Some {
     fun test()
@@ -111,7 +107,7 @@ object GeneralTest {
             "SomeImplGT$op",
             ClassProperties.Default
         ) implements Some::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             public static ofType(TypeInfo.Void) method "ifelsenaming" runsMiniKt {
                 if_(bool(true)) {

@@ -141,17 +141,15 @@ object OtherTests {
                 variable<Int>("bye") setTo boxNumber(2)
             }
 
-            echoLine(variable<String>("hi"))
+//            echoLine(variable<String>("hi"))
 
-            thisFun.return_(objectRefOf(Unit))
+            return_()
         }
 
-//        res.printCode()
-//        res.toByteArray()
-
-//        val ins = res.initAndGetAsInterface<NameP>()
-
-//        assertEquals("true", ins(SomeOther::class.java))
-//        assertEquals("false", ins(OtherTests::class.java))
+        res.printCode()
+        res.toByteArray()
+//
+        val ins = res.initAndGetAsInterface<NameP>()
+//
     }
 }

@@ -265,7 +265,7 @@ class KBOpcodesVerifier(
 
     private fun jumpToLabelInBuffer(l: Label, lp: LabelPresent, frame: Frame): Int {
         val idx = allByteCode.indexOfFirst { u ->
-            val it = u.unpack()
+            val it = u.actual()//.unpack()
             it is LabelPoint && it.label == l
         }
         if (idx == -1) error("Could not find the label of $l")
@@ -321,8 +321,8 @@ class KBOpcodesVerifier(
                         }
 
                         PUTFIELD -> {
-                            byteCode.owner.getSWord().popCompareSafely(stack, byteCodeOld, currentIndex = i)
                             byteCode.descriptor.getSWord().popCompareSafely(stack, byteCodeOld, currentIndex = i)
+                            byteCode.owner.getSWord().popCompareSafely(stack, byteCodeOld, currentIndex = i)
                         }
 
                         GETFIELD -> {
@@ -496,6 +496,13 @@ class KBOpcodesVerifier(
 
                 is JustPrint -> Unit // Ignore
                 is ByteCodeMetaData -> Unit
+                is KBInvokeDyn -> {
+                    byteCode.descriptor.getArgsSWordArray()
+                        .popFromListReverse(stack, byteCodeOld, null, null, currentIndex = i)
+                    byteCode.descriptor.getReturnSWord()?.let {
+                        stack.push(it, byteCodeOld)
+                    }
+                }
             }
         }
         return -2

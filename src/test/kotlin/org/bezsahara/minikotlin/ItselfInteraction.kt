@@ -5,20 +5,15 @@ import org.bezsahara.minikotlin.builder.declaration.final
 import org.bezsahara.minikotlin.builder.declaration.ofType
 import org.bezsahara.minikotlin.builder.declaration.static
 import org.bezsahara.minikotlin.builder.makeClass
-import org.bezsahara.minikotlin.builder.singleFunImplMiniKt
-import org.bezsahara.minikotlin.lan.callMethod
 import org.bezsahara.minikotlin.lan.callMethodNt
 import org.bezsahara.minikotlin.lan.getField
-import org.bezsahara.minikotlin.lan.lib.call1
 import org.bezsahara.minikotlin.lan.lib.echoLine
 import org.bezsahara.minikotlin.lan.lib.number
 import org.bezsahara.minikotlin.lan.lib.return_
 import org.bezsahara.minikotlin.lan.lib.str
 import org.bezsahara.minikotlin.lan.lib.toStr
-import org.bezsahara.minikotlin.lan.logic.call2
 import org.bezsahara.minikotlin.lan.logic.callNt2
 import org.bezsahara.minikotlin.lan.logic.eq
-import org.bezsahara.minikotlin.lan.pieces.exec
 import org.bezsahara.minikotlin.lan.runsMiniKt
 import org.bezsahara.minikotlin.lan.setField
 import kotlin.test.Test
@@ -33,7 +28,7 @@ object ItselfInteraction {
     @Test
     fun `field antics`() {
         val cl = makeClass("thisTestOfFields") implements ThisTests::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             val field = private final static ofType(TypeInfo.String) field "someField"
 
@@ -79,7 +74,7 @@ object ItselfInteraction {
     @Test
     fun `call to other member method`() {
         val cl = makeClass("thisTest") implements ThisTests::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             val m0 = implOf(ThisTests::meet) runsMiniKt {
                 return_(str("hello90"))

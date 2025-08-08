@@ -17,7 +17,7 @@ inline fun <reified T: Any> makeTestClassAndCrash(
     noinline block: MiniKotlinAny.() -> Unit,
 ): KBClass.Result {
     val cl = makeClass(n) implements T::class body {
-        autoInit()
+        this.autoInitAndReturn()
 
         implOf(func).runsMiniKt(block)
     }
@@ -31,7 +31,7 @@ fun <T: Any> makeTestClass(
     block: MiniKotlinAny.() -> Unit,
 ): KBClass.Result {
     val cl = makeClass(UUID.randomUUID().toString().replace("-", "")) implements cl body {
-        autoInit()
+        this.autoInitAndReturn()
 
         implOf(func).runsMiniKt(block)
     }

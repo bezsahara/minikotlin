@@ -1,10 +1,8 @@
 package org.bezsahara.minikotlin
 
 import org.bezsahara.minikotlin.builder.declaration.TypeInfo
-import org.bezsahara.minikotlin.builder.declaration.args
 import org.bezsahara.minikotlin.builder.declaration.ofType
 import org.bezsahara.minikotlin.builder.declaration.static
-import org.bezsahara.minikotlin.builder.implLambdaMiniKt
 import org.bezsahara.minikotlin.builder.makeClass
 import org.bezsahara.minikotlin.builder.opcodes.ext.dup
 import org.bezsahara.minikotlin.builder.opcodes.ext.iconst_0
@@ -16,7 +14,6 @@ import org.bezsahara.minikotlin.builder.opcodes.ext.newarray
 import org.bezsahara.minikotlin.builder.opcodes.ext.return_
 import org.bezsahara.minikotlin.builder.opcodes.ext.saload
 import org.bezsahara.minikotlin.builder.opcodes.ext.sastore
-import org.bezsahara.minikotlin.builder.opcodes.helpers.print
 import org.bezsahara.minikotlin.builder.opcodes.helpers.printI
 import org.bezsahara.minikotlin.builder.singleFunImplMiniKt
 import org.bezsahara.minikotlin.lan.callMethod
@@ -36,7 +33,6 @@ import org.bezsahara.minikotlin.lan.logic.notEq
 import org.bezsahara.minikotlin.lan.logic.or
 import org.bezsahara.minikotlin.lan.pieces.exec
 import org.bezsahara.minikotlin.lan.runsMiniKt
-import java.lang.reflect.Type
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -121,7 +117,7 @@ object MathRelatedTests {
     @Test
     fun `integer antics`() {
         val cl = makeClass("IDTest") implements IntegerDifferent::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             val m = private static ofType(TypeInfo.Void) method "just"("i" to TypeInfo.Short) runsMiniKt {
                 val i = variableNt<Short>("i")
@@ -146,7 +142,7 @@ object MathRelatedTests {
     @Test
     fun `integer and short`() {
         val cl = makeClass("IDTest") implements IntegerDifferent::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             val m = private static ofType(TypeInfo.Void) method "just"("i" to TypeInfo.Short) runs {
                 iload(0)

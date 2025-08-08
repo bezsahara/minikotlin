@@ -273,18 +273,19 @@ object ACCEPTS_STRICT
 @Suppress("ClassName")
 object ACCEPTS_ALL
 
-object Arr {
-    val I = SWord.A(IntArray::class.java)
+// Stands for Common arrays
+object CAs {
+    @JvmField val I = SWord.A(IntArray::class.java)
 
-    val C = SWord.A(CharArray::class.java)
-    val B = SWord.A(ByteArray::class.java, arrayOf(BooleanArray::class.java))
-    val S = SWord.A(ShortArray::class.java)
-    val L = SWord.A(LongArray::class.java)
-    val F = SWord.A(FloatArray::class.java)
-    val D = SWord.A(DoubleArray::class.java)
-    val A = SWord.A(Array<Any>::class.java)
+    @JvmField val C = SWord.A(CharArray::class.java)
+    @JvmField val B = SWord.A(ByteArray::class.java, arrayOf(BooleanArray::class.java))
+    @JvmField val S = SWord.A(ShortArray::class.java)
+    @JvmField val L = SWord.A(LongArray::class.java)
+    @JvmField val F = SWord.A(FloatArray::class.java)
+    @JvmField val D = SWord.A(DoubleArray::class.java)
+    @JvmField val A = SWord.A(Array<Any>::class.java)
 
-    val All = SWord.A(Array<Any>::class.java, arrayOf(
+    @JvmField val All = SWord.A(Array<Any>::class.java, arrayOf(
         IntArray::class.java,
         LongArray::class.java,
         FloatArray::class.java,

@@ -19,7 +19,7 @@ object NamingTests {
     @Test//implements NT::class
     fun `debug names`() {
         val cl = makeClass("aa234324") implements NT::class body {
-            autoInit()
+            this.autoInitAndReturn()
 
             implOf(NT::test) runsMiniKt {
                 val absolute = str("general").toVariable("absolute")

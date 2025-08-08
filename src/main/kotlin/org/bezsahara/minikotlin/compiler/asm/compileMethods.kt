@@ -1,8 +1,12 @@
 package org.bezsahara.minikotlin.compiler.asm
 
 import org.bezsahara.minikotlin.builder.KBMethod
+import org.bezsahara.minikotlin.builder.declaration.TypeInfo
 import org.bezsahara.minikotlin.builder.opcodes.method.*
+import org.objectweb.asm.Handle
 import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
+import java.lang.annotation.RetentionPolicy
 import org.objectweb.asm.Label as ASMLabel
 
 
@@ -14,6 +18,12 @@ fun rasp(a: Boolean) {
         val goodbye = "12"
         println(goodbye)
     }
+}
+
+fun asmVisibleFor(ti: TypeInfo): Boolean {
+    val ann: Class<*> = ti.recoverJClass()
+    val rp = ann.getAnnotation(Retention::class.java)?.value ?: RetentionPolicy.CLASS
+    return rp == RetentionPolicy.RUNTIME
 }
 
 fun KBCompilerASM.compileMethod(methodVisitor: MethodVisitor, method: KBMethod.Result) {
@@ -109,6 +119,13 @@ fun KBCompilerASM.compileMethod(methodVisitor: MethodVisitor, method: KBMethod.R
                 labelMap.getOrPut(operation.start) { ASMLabel() },
                 labelMap.getOrPut(operation.end) { ASMLabel() },
                 operation.index
+            )
+
+            is KBInvokeDyn -> methodVisitor.visitInvokeDynamicInsn(
+                operation.name,
+                operation.descriptor.getReturnSignature(),
+                Handle(Opcodes.H_INVOKESTATIC, operation.bootstrapOwner.getStringRep(), operation.bootstrapName, operation.bootstrapDescriptor.getReturnSignature(), operation.isInterface),
+                *operation.bootstrapArgs
             )
         }
     }

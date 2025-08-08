@@ -39,25 +39,25 @@ class InsnOp private constructor(
 
         /* ──────────── 46–53  :  array loads ──────────── */
 
-        @JvmField val IALOAD      = InsnOp(46, arrayOf(Arr.I, I),                  arrayOf(I), "IALOAD") // ref, idx → int
-        @JvmField val LALOAD      = InsnOp(47, arrayOf(Arr.L, I),                  arrayOf(L), "LALOAD") // ref, idx → long
-        @JvmField val FALOAD      = InsnOp(48, arrayOf(Arr.F, I),                  arrayOf(F), "FALOAD") // ref, idx → float(cat-1)
-        @JvmField val DALOAD      = InsnOp(49, arrayOf(Arr.D, I),                  arrayOf(D), "DALOAD") // ref, idx → double
-        @JvmField val AALOAD      = InsnOp(50, arrayOf(Arr.A, I),                  arrayOf(A), "AALOAD") // ref, idx → ref
-        @JvmField val BALOAD      = InsnOp(51, arrayOf(Arr.B, I),                  arrayOf(I), "BALOAD") // ref, idx → byte(cat-1)
-        @JvmField val CALOAD      = InsnOp(52, arrayOf(Arr.C, I),                  arrayOf(I), "CALOAD") // ref, idx → char(cat-1)
-        @JvmField val SALOAD      = InsnOp(53, arrayOf(Arr.S, I),                  arrayOf(I), "SALOAD") // ref, idx → short(cat-1)
+        @JvmField val IALOAD      = InsnOp(46, arrayOf(CAs.I, I),                  arrayOf(I), "IALOAD") // ref, idx → int
+        @JvmField val LALOAD      = InsnOp(47, arrayOf(CAs.L, I),                  arrayOf(L), "LALOAD") // ref, idx → long
+        @JvmField val FALOAD      = InsnOp(48, arrayOf(CAs.F, I),                  arrayOf(F), "FALOAD") // ref, idx → float(cat-1)
+        @JvmField val DALOAD      = InsnOp(49, arrayOf(CAs.D, I),                  arrayOf(D), "DALOAD") // ref, idx → double
+        @JvmField val AALOAD      = InsnOp(50, arrayOf(CAs.A, I),                  arrayOf(A), "AALOAD") // ref, idx → ref
+        @JvmField val BALOAD      = InsnOp(51, arrayOf(CAs.B, I),                  arrayOf(I), "BALOAD") // ref, idx → byte(cat-1)
+        @JvmField val CALOAD      = InsnOp(52, arrayOf(CAs.C, I),                  arrayOf(I), "CALOAD") // ref, idx → char(cat-1)
+        @JvmField val SALOAD      = InsnOp(53, arrayOf(CAs.S, I),                  arrayOf(I), "SALOAD") // ref, idx → short(cat-1)
 
         /* ──────────── 79–86  :  array stores ──────────── */
 
-        @JvmField val IASTORE     = InsnOp(79, arrayOf(Arr.I, I, I),               emptyArrayOfSWord, "IASTORE") // store int into int[]
-        @JvmField val LASTORE     = InsnOp(80, arrayOf(Arr.L, I, L),               emptyArrayOfSWord, "LASTORE") // store long into long[]
-        @JvmField val FASTORE     = InsnOp(81, arrayOf(Arr.F, I, F),               emptyArrayOfSWord, "FASTORE") // store float into float[]
-        @JvmField val DASTORE     = InsnOp(82, arrayOf(Arr.D, I, D),               emptyArrayOfSWord, "DASTORE") // store double into double[]
-        @JvmField val AASTORE     = InsnOp(83, arrayOf(Arr.A, I, A),               emptyArrayOfSWord, "AASTORE") // store reference into Object[]
-        @JvmField val BASTORE     = InsnOp(84, arrayOf(Arr.B, I, I),               emptyArrayOfSWord, "BASTORE") // store byte or boolean into byte[] or boolean[]
-        @JvmField val CASTORE     = InsnOp(85, arrayOf(Arr.C, I, I),               emptyArrayOfSWord, "CASTORE") // store char into char[]
-        @JvmField val SASTORE     = InsnOp(86, arrayOf(Arr.S, I, I),               emptyArrayOfSWord, "SASTORE") // store short into short[]
+        @JvmField val IASTORE     = InsnOp(79, arrayOf(CAs.I, I, I),               emptyArrayOfSWord, "IASTORE") // store int into int[]
+        @JvmField val LASTORE     = InsnOp(80, arrayOf(CAs.L, I, L),               emptyArrayOfSWord, "LASTORE") // store long into long[]
+        @JvmField val FASTORE     = InsnOp(81, arrayOf(CAs.F, I, F),               emptyArrayOfSWord, "FASTORE") // store float into float[]
+        @JvmField val DASTORE     = InsnOp(82, arrayOf(CAs.D, I, D),               emptyArrayOfSWord, "DASTORE") // store double into double[]
+        @JvmField val AASTORE     = InsnOp(83, arrayOf(CAs.A, I, A),               emptyArrayOfSWord, "AASTORE") // store reference into Object[]
+        @JvmField val BASTORE     = InsnOp(84, arrayOf(CAs.B, I, I),               emptyArrayOfSWord, "BASTORE") // store byte or boolean into byte[] or boolean[]
+        @JvmField val CASTORE     = InsnOp(85, arrayOf(CAs.C, I, I),               emptyArrayOfSWord, "CASTORE") // store char into char[]
+        @JvmField val SASTORE     = InsnOp(86, arrayOf(CAs.S, I, I),               emptyArrayOfSWord, "SASTORE") // store short into short[]
 
         /* ──────────── 87–95  :  simple stack ops ──────────── */
         // special cases in verifier
@@ -169,7 +169,7 @@ class InsnOp private constructor(
 
         /* ──────────── misc ──────────── */
 
-        @JvmField val ARRAYLENGTH = InsnOp(190, arrayOf(Arr.All),                    arrayOf(I), "ARRAYLENGTH")  // ref → int
+        @JvmField val ARRAYLENGTH = InsnOp(190, arrayOf(CAs.All),                    arrayOf(I), "ARRAYLENGTH")  // ref → int
         @JvmField val ATHROW      = InsnOp(191, arrayOf(ACommon.TH),                    emptyArrayOfSWord, "ATHROW")   // pop throwable, never returns
 
         @JvmField val MONITORENTER= InsnOp(194, arrayOf(A),                    emptyArrayOfSWord, "MONITORENTER")   // pop ref (monitor enter)

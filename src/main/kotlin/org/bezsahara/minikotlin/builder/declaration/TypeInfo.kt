@@ -79,6 +79,10 @@ sealed class TypeInfo : TypeHold {
         override fun getStringRep(): String {
             return type
         }
+
+        override fun hashCode(): Int {
+            return getReturnStringRep().hashCode()
+        }
     }
 
     sealed class JClassAvailable : TypeInfo() {
@@ -130,7 +134,7 @@ sealed class TypeInfo : TypeHold {
         }
     }
 
-    data class KArray(val el: TypeInfo) : TypeInfo() {
+    data class KArray(val el: TypeInfo) : JClassAvailable() {
         override fun getStringRep(): String {
             return getReturnStringRep()
         }
@@ -139,8 +143,10 @@ sealed class TypeInfo : TypeHold {
             return "[${el.getReturnStringRep()}"
         }
 
+        override val jClass: Class<out Any> = java.lang.reflect.Array.newInstance(el.recoverJClass(), 0).javaClass
+
         override fun recoverJClass(): Class<*> {
-            return java.lang.reflect.Array.newInstance(el.recoverJClass(), 0).javaClass
+            return jClass
         }
     }
 

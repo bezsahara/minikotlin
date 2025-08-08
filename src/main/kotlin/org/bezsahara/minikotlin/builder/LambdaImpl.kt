@@ -51,7 +51,7 @@ fun <T: Function<*>> implLambdaMiniKt(functionJava: Class<T>, kType: KType, bloc
         error("Method is final")
     }
     val result = KBClass.Builder("lambda${UUID.randomUUID().toString().replace("-", "")}", ClassProperties.Default).implements(functionJava).body {
-        autoInit()
+        this.autoInitAndReturn()
         var pId = -1
         val originalName = invokeMethod.name
         val nameOfBridge = originalName + "OF"
@@ -111,7 +111,7 @@ fun <T: Function<*>, C: Any> singleFunImplMiniKt(klass: KClass<C>, fn: T, block:
         error("Method is final")
     }
     val result = KBClass.Builder("lambda${UUID.randomUUID().toString().replace("-", "")}", ClassProperties.Default).implements(clazz).body {
-        autoInit()
+        this.autoInitAndReturn()
         implOf(fn).runsMiniKt(block)
     }.result()
     return result

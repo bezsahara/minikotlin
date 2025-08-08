@@ -35,11 +35,17 @@ data class DeclarationProperty<@Suppress("unused") T : DP, K : TypeHold>(
     val isVolatile: Boolean = false,
     val isTransient: Boolean = false,
     val typeInfo: TypeInfo? = null,
-    val annotations: List<String> = emptyList()
+    val annotations: List<TypeInfo> = emptyList()
 ) {
 
     override fun toString(): String {
         return buildString {
+            if (annotations.isNotEmpty()) {
+                annotations.forEach {
+                    append('@')
+                    append(it.getStringRep()).append('\n')
+                }
+            }
             append(visibility.name.lowercase())
             append(' ')
             if (isFinal) append("final ")
@@ -71,7 +77,8 @@ data class DeclarationProperty<@Suppress("unused") T : DP, K : TypeHold>(
             isDefault || other.isDefault,
             isVolatile || other.isVolatile,
             isTransient || other.isTransient,
-            other.typeInfo
+            other.typeInfo,
+            annotations + other.annotations
         )
     }
 
@@ -120,6 +127,12 @@ infix fun <DPType : DP>
 
 
 // Semantics
+infix fun
+        DeclarationProperty<DP.Both, TypeHold.None>
+        .annotation(other: TypeInfo): DeclarationProperty<DP.Both, TypeHold.None> {
+    return copy(annotations = annotations + listOf(other))
+}
+
 infix fun <T : TypeHold>
         DeclarationProperty<DP.Both, TypeHold.None>
         .static(other: DeclarationProperty<DP.Both, T>): DeclarationProperty<DP.Both, T> {

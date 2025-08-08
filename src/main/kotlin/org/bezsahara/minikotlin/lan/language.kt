@@ -8,6 +8,7 @@ import org.bezsahara.minikotlin.builder.declaration.DeclarationProperty
 import org.bezsahara.minikotlin.builder.declaration.TypeInfo
 import org.bezsahara.minikotlin.lan.KVar.Obj
 import org.bezsahara.minikotlin.lan.compiler.MiniKotlinCompiler
+import org.bezsahara.minikotlin.lan.helper.InitSuper
 import org.bezsahara.minikotlin.lan.logic.ErrorHandler
 import org.bezsahara.minikotlin.lan.logic.PropertyGet
 import org.bezsahara.minikotlin.lan.logic.PropertySet
@@ -49,6 +50,19 @@ class MiniKotlin<F: Any>(
 
     fun immutableCodePieces(): List<ActionPiece> {
         return actionPieces
+    }
+
+    // Simple super init. Use it only if your class does not extend any other class.
+    // Otherwise, write it yourself in bytecode
+    fun initSuper() {
+        require(methodName.equals("<init>")) { "initSuper is used only in init methods" }
+
+        performAction(InitSuper())
+    }
+
+    // Simplified method for creating action blocks
+    fun performAction(block: PerformAction.Scope.() -> Unit) {
+        performAction(PerformAction(block))
     }
 
     // Work around for if else
